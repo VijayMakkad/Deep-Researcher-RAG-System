@@ -1,0 +1,34 @@
+# API + UI
+fastapi
+uvicorn[standard]
+streamlit
+requests
+
+# Parsing / files
+PyPDF2
+python-multipart
+pydantic
+
+# Retrieval
+sentence-transformers
+faiss-cpu
+
+# Models / ML (optional; heavy)
+torch
+transformers>=4.30.0
+accelerate
+
+# Summarization / fallback
+sumy
+nltk
+
+# Local LLMs
+ollama
+
+# Analysis / viz
+pandas
+matplotlib
+
+# Optional OCR (install tesseract via brew separately)
+pytesseract
+Pillow

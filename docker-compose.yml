@@ -1,0 +1,14 @@
+services:
+  deep-researcher:
+    build: .
+    container_name: deep-researcher
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    environment:
+      - SUMMARIZER_BACKEND=ollama
+      - OLLAMA_MODEL=llama3
+      - OLLAMA_HOST=host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
