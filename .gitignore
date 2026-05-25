@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Ruff
+.ruff_cache/
+
 # Distribution / packaging
 .Python
 build/
@@ -120,12 +123,12 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
-.venv
-env/
-venv/
-venv310/
-ENV/
+/.env
+/.venv
+/env/
+/venv/
+/venv310/
+/ENV/
 env.bak/
 venv.bak/
 
@@ -188,18 +191,14 @@ server.log
 
 # Application specific files
 # Document storage (contains user uploads)
-app/uploaded_docs/
-uploaded_docs/
+/uploaded_docs/
 
 # FAISS vector database files (generated at runtime)
-app/faiss_index.bin
-faiss_index.bin
-app/doc_meta.json
-doc_meta.json
+/faiss_index.bin
+/doc_meta.json
 
 # Cloudflare tunnel configuration (contains sensitive data)
 .cloudflared/
-*.json
 
 # Docker
 .dockerignore
@@ -207,11 +206,11 @@ doc_meta.json
 # Temporary files
 *.tmp
 *.temp
-tmp/
-temp/
+/tmp/
+/temp/
 
 # Model files (large files that should be downloaded at runtime)
-models/
+/models/
 *.bin
 *.safetensors
 *.gguf
@@ -223,7 +222,7 @@ models/
 .env.development.local
 .env.test.local
 .env.production.local
-secrets/
+/secrets/
 config/secrets.py
 
 # Backup files
@@ -237,13 +236,13 @@ __temp__/
 .temp/
 
 # NLTK data (downloaded at runtime)
-nltk_data/
+/nltk_data/
 
 # Streamlit cache
-.streamlit/
+/.streamlit/
 
 # FastAPI static files
-static/
+/static/
 
 # Development database files
 *.db
@@ -292,3 +291,5 @@ mlruns/
 .directory
 .Trash-*
 .nfs*
+
+.agents

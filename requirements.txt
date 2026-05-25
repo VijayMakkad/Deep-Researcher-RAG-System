@@ -1,34 +1,46 @@
-# API + UI
-fastapi
-uvicorn[standard]
-streamlit
-requests
+# ===========================================================================
+# Deep Researcher — Core Dependencies
+# ===========================================================================
+# This file mirrors the [project.dependencies] from pyproject.toml for users
+# who prefer `pip install -r requirements.txt` over `pip install -e .`
+#
+# For optional extras (DistilBART, OCR, dev tools), see pyproject.toml:
+#   pip install -e ".[distilbart]"
+#   pip install -e ".[dev]"
+# ===========================================================================
 
-# Parsing / files
-PyPDF2
+# --- Web framework ---
+fastapi>=0.111
+uvicorn[standard]>=0.29
 python-multipart
-pydantic
 
-# Retrieval
-sentence-transformers
+# --- Frontend ---
+streamlit>=1.35
+httpx>=0.27
+
+# --- Data validation & config ---
+pydantic>=2.0
+pydantic-settings>=2.0
+python-dotenv>=1.0            # Required by frontend api_client.py for .env loading
+
+# --- Document parsing ---
+pypdf>=4.0
+
+# --- Embeddings & retrieval ---
+sentence-transformers>=3.0
 faiss-cpu
+numpy>=1.24
 
-# Models / ML (optional; heavy)
-torch
-transformers>=4.30.0
-accelerate
+# --- Summarisation (LexRank) ---
+sumy>=0.11
+nltk>=3.8
 
-# Summarization / fallback
-sumy
-nltk
+# --- LLM backend (Ollama) ---
+ollama>=0.2
 
-# Local LLMs
-ollama
+# --- Visualisation ---
+pandas>=2.0
+matplotlib>=3.8
 
-# Analysis / viz
-pandas
-matplotlib
-
-# Optional OCR (install tesseract via brew separately)
-pytesseract
-Pillow
+# --- Logging ---
+structlog>=24.0

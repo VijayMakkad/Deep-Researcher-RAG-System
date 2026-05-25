@@ -1,276 +1,254 @@
-# 🔬 Deep Researcher - RAG Document Analysis System
+# 🔬 Deep Researcher — RAG Document Q&A System
 
-A powerful Retrieval-Augmented Generation (RAG) system that enables intelligent document querying with multiple AI backends. Upload documents, ask questions, and get comprehensive answers powered by state-of-the-art language models.
+A production-grade Retrieval-Augmented Generation (RAG) system for intelligent document querying. Upload documents, ask questions, and get comprehensive answers powered by multiple AI backends.
 
-## 🌟 Features
-
-- **📄 Multi-format Document Support**: PDF processing and text extraction
-- **🤖 Multiple AI Backends**: 
-  - **LexRank**: Extractive summarization for quick insights
-  - **DistilBART**: Abstractive summarization for coherent responses
-  - **Ollama (LLaMA3)**: Large language model for comprehensive analysis
-- **🔍 Vector Search**: FAISS-powered semantic search with sentence transformers
-- **🌐 Web Interface**: Clean Streamlit UI with real-time backend switching
-- **🚀 REST API**: FastAPI backend with comprehensive documentation
-- **🐳 Docker Support**: Containerized deployment with docker-compose
-- **☁️ Cloud Access**: Cloudflare tunnel integration for public deployment
-
-## 🏗️ Architecture
+## Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Streamlit UI  │───▶│   FastAPI Backend │───▶│  AI Backends    │
-│   (Port 8501)   │    │   (Port 8000)    │    │  - LexRank      │
-└─────────────────┘    └──────────────────┘    │  - DistilBART   │
-                                │               │  - Ollama       │
-                                ▼               └─────────────────┘
-                       ┌──────────────────┐
-                       │  FAISS Vector DB │
-                       │  + Document Store │
-                       └──────────────────┘
+┌───────────────────┐        ┌──────────────────────┐       ┌───────────────────┐
+│  Streamlit UI     │  HTTP  │  FastAPI Backend      │       │  AI Backends      │
+│  (frontend/)      │───────▶│  (backend/)           │──────▶│  • LexRank        │
+│  Port 8501        │        │  Port 8000            │       │  • DistilBART     │
+└───────────────────┘        └──────────┬───────────┘       │  • Ollama (LLM)   │
+                                        │                    └───────────────────┘
+                             ┌──────────▼───────────┐
+                             │  FAISS Vector Index   │
+                             │  + SentenceTransformer│
+                             └──────────────────────┘
 ```
 
-## 🚀 Live Demo
+## Features
 
-**🌐 Main Application**: [https://deepresearcher.page](https://deepresearcher.page)  
-**📖 API Documentation**: [https://api.deepresearcher.page/docs](https://api.deepresearcher.page/docs)
+- **📄 Multi-format ingestion**: PDF, TXT, Markdown with configurable sliding-window chunking
+- **🤖 Three AI backends**:
+  - **LexRank** — extractive summarisation (fast, lightweight)
+  - **DistilBART** — abstractive summarisation via HuggingFace (optional, requires `torch`)
+  - **Ollama** — local LLM inference (LLaMA, Mistral, etc.)
+- **🔍 FAISS vector search** with sentence-transformer embeddings
+- **🔥 Diverse Mode** — MMR (Maximal Marginal Relevance) re-ranking for broader topic coverage
+- **📡 Streaming** — SSE endpoint for token-by-token Ollama responses
+- **🐳 Docker** — separate backend/frontend containers with health checks
+- **🧪 Tested** — pytest suite with async API tests, retriever tests, and generation tests
 
-## 📋 Prerequisites
-
-- Python 3.10+
-- [Ollama](https://ollama.ai/) (for LLM backend)
-- Docker & Docker Compose (optional)
-- [Cloudflare Account](https://cloudflare.com/) (for public deployment)
-
-## 🛠️ Installation
-
-### Option 1: Local Development
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd deep-researcher
-   ```
-
-2. **Create virtual environment**
-   ```bash
-   python3 -m venv venv310
-   source venv310/bin/activate  # On Windows: venv310\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Download NLTK data**
-   ```bash
-   python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
-   ```
-
-5. **Install and start Ollama**
-   ```bash
-   # Install Ollama from https://ollama.ai/
-   ollama serve &
-   ollama pull llama3
-   ```
-
-### Option 2: Docker Deployment
-
-1. **Start with Docker Compose**
-   ```bash
-   docker-compose up -d --build
-   ```
-
-2. **Ensure Ollama is running on host**
-   ```bash
-   ollama serve &
-   ollama pull llama3
-   ```
-
-## 🎯 Usage
-
-### Starting the Application
-
-**Local Development:**
-```bash
-# Terminal 1: Start FastAPI backend
-source venv310/bin/activate
-cd app
-python main.py
-
-# Terminal 2: Start Streamlit UI
-source venv310/bin/activate
-cd app
-streamlit run streamlit_app.py --server.port 8501
-
-# Terminal 3: Start Ollama (if not running)
-ollama serve
-```
-
-**Docker:**
-```bash
-docker-compose up -d
-```
-
-### Using the Interface
-
-1. **Upload Documents**: Drag and drop PDF files into the upload area
-2. **Select AI Backend**: Choose between LexRank, DistilBART, or Ollama
-3. **Ask Questions**: Type your questions about the uploaded documents
-4. **Get Answers**: Receive contextual responses based on document content
-
-### API Endpoints
-
-- `POST /upload` - Upload and process documents
-- `POST /query` - Query documents with specific backend
-- `GET /backend` - Get current active backend
-- `POST /set_backend` - Switch between AI backends
-- `GET /docs` - Interactive API documentation
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# Backend Configuration
-SUMMARIZER_BACKEND=ollama          # Default backend: lexrank, distilbart, ollama
-OLLAMA_MODEL=llama3               # Ollama model to use
-OLLAMA_HOST=localhost:11434       # Ollama server address
-
-# Docker Configuration
-OLLAMA_HOST=host.docker.internal:11434  # For Docker deployments
-```
-
-### Cloudflare Tunnel Setup
-
-For public deployment with custom domain:
-
-1. **Install cloudflared**
-   ```bash
-   # macOS
-   brew install cloudflare/cloudflare/cloudflared
-   
-   # Other platforms: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/
-   ```
-
-2. **Authenticate with Cloudflare**
-   ```bash
-   cloudflared tunnel login
-   ```
-
-3. **Create tunnel**
-   ```bash
-   cloudflared tunnel create deepresearcher
-   ```
-
-4. **Configure DNS routes**
-   ```bash
-   cloudflared tunnel route dns deepresearcher deepresearcher.yourdomain.com
-   cloudflared tunnel route dns deepresearcher api.deepresearcher.yourdomain.com
-   ```
-
-5. **Install as system service**
-   ```bash
-   sudo cloudflared service install
-   ```
-
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 deep-researcher/
-├── app/
-│   ├── main.py              # FastAPI backend server
-│   ├── streamlit_app.py     # Streamlit web interface
-│   ├── retreiver.py         # Document retrieval and vector search
-│   ├── summarizer.py        # AI backend implementations
-│   ├── ingest_and_index.py  # Document processing utilities
-│   ├── sample_docs/         # Example documents
-│   └── uploaded_docs/       # User uploaded documents
-├── venv310/                 # Python virtual environment
-├── .cloudflared/           # Cloudflare tunnel configuration
-├── docker-compose.yml      # Docker deployment configuration
-├── Dockerfile             # Container build instructions
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
+├── backend/
+│   ├── main.py                    # FastAPI app factory
+│   ├── api/
+│   │   ├── deps.py                # Dependency injection
+│   │   └── routes/
+│   │       ├── documents.py       # /documents/upload, GET, DELETE
+│   │       ├── query.py           # /query, /query/stream
+│   │       └── system.py          # /health, /ready, /system/backend
+│   ├── core/
+│   │   ├── config.py              # Pydantic Settings (all env vars)
+│   │   ├── logging.py             # structlog setup
+│   │   └── exceptions.py          # Custom exceptions + handlers
+│   ├── services/
+│   │   ├── ingestion.py           # PDF/text parsing & chunking
+│   │   ├── retriever.py           # FAISS retrieval + MMR
+│   │   └── generation/
+│   │       ├── base.py            # Abstract Generator base
+│   │       ├── lexrank.py         # LexRank implementation
+│   │       ├── distilbart.py      # DistilBART implementation
+│   │       └── ollama.py          # Ollama implementation
+│   └── models/
+│       ├── requests.py            # Pydantic request schemas
+│       └── responses.py           # Pydantic response schemas
+├── frontend/
+│   ├── app.py                     # Streamlit entry point
+│   ├── api_client.py              # Typed HTTP client (httpx)
+│   ├── style.css                  # Custom CSS
+│   ├── state.py                   # Session state key constants
+│   └── components/
+│       ├── sidebar.py             # Sidebar UI
+│       ├── results.py             # Answer + sources display
+│       └── charts.py              # Relevance chart
+├── tests/
+│   ├── conftest.py                # Fixtures
+│   ├── test_api.py
+│   ├── test_retriever.py
+│   └── test_generation.py
+├── docker/
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── docker-compose.yml
+├── scripts/
+│   └── build_index.py             # Standalone index builder
+├── .env.example
+├── .pre-commit-config.yaml
+├── pyproject.toml
+└── README.md
 ```
 
-## 🧠 AI Backends
+## Quick Start
 
-### LexRank
-- **Type**: Extractive summarization
-- **Use Case**: Quick document insights, key sentence extraction
-- **Pros**: Fast, preserves original text
-- **Cons**: Limited creativity, may miss context
+### Prerequisites
 
-### DistilBART
-- **Type**: Abstractive summarization
-- **Use Case**: Coherent summaries, text generation
-- **Pros**: Natural language generation, contextual understanding
-- **Cons**: Moderate resource usage
+- Python 3.11+
+- [Ollama](https://ollama.ai/) (optional, for LLM backend)
 
-### Ollama (LLaMA3)
-- **Type**: Large Language Model
-- **Use Case**: Complex reasoning, detailed analysis
-- **Pros**: Comprehensive responses, advanced reasoning
-- **Cons**: Requires more computational resources
+### 1. Clone & Install
 
-## 🔍 Technical Details
+```bash
+git clone <your-repo-url>
+cd deep-researcher
 
-### Vector Search
-- **Embedding Model**: `all-MiniLM-L6-v2` (384 dimensions)
-- **Vector Database**: FAISS with flat index
-- **Similarity**: Cosine similarity for document retrieval
-- **Chunk Size**: Optimized for document context
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-### Document Processing
-- **Supported Formats**: PDF (via PyPDF2)
-- **Text Extraction**: Automatic preprocessing and cleaning
-- **Storage**: Local file system with metadata tracking
+# Install core dependencies
+pip install -e .
 
-## 🚀 Deployment Options
+# Or with DistilBART support (downloads ~2GB of PyTorch + model weights)
+pip install -e ".[distilbart]"
 
-### Local Development
-Perfect for testing and development with full control over all components.
+# Or with dev tools
+pip install -e ".[dev]"
 
-### Docker Container
-Simplified deployment with consistent environment across platforms.
+# Or with plain requirements.txt (no extras)
+pip install -r requirements.txt
+```
 
-### Cloud Deployment
-Public access via Cloudflare tunnels with custom domain support.
+> **⚠️ Upgrading from v0.1.x?** The metadata schema for the FAISS index
+> changed in v0.2.0. On first startup, the backend automatically detects
+> and removes stale `faiss_index.bin` / `doc_meta.json` files from the old
+> schema. You will need to **re-upload your documents** to rebuild the index.
 
-## 🛡️ Security Considerations
+### 2. Configure
 
-- Document uploads are stored locally
-- No data persistence beyond session for uploaded content
-- API endpoints are rate-limited
-- Cloudflare provides DDoS protection and SSL termination
+```bash
+cp .env.example .env
+# Edit .env to adjust settings (defaults work out of the box for LexRank)
+```
 
-## 🤝 Contributing
+### 3. Run
+
+```bash
+# Terminal 1 — Backend
+uvicorn backend.main:app --reload
+
+# Terminal 2 — Frontend
+streamlit run frontend/app.py
+```
+
+Open http://localhost:8501 in your browser.
+
+### 4. (Optional) Ollama Setup
+
+```bash
+ollama serve &
+ollama pull llama3
+
+# Set in .env:
+# SUMMARIZER_BACKEND=ollama
+# OLLAMA_MODEL=llama3
+```
+
+## Docker Deployment
+
+```bash
+cp .env.example .env   # adjust if needed
+
+docker compose -f docker/docker-compose.yml up --build
+```
+
+This starts two containers:
+- **Backend** on port 8000 (with health checks)
+- **Frontend** on port 8501 (waits for backend to be healthy)
+
+## Environment Variables
+
+All configuration is centralised in `backend/core/config.py` and read from `.env`:
+
+| Variable | Default | Description |
+|---|---|---|
+| `SUMMARIZER_BACKEND` | `lexrank` | Default backend: `lexrank`, `distilbart`, `ollama` |
+| `OLLAMA_MODEL` | `llama3` | Ollama model name |
+| `OLLAMA_HOST` | `localhost:11434` | Ollama server address |
+| `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformer model |
+| `CHUNK_SIZE` | `500` | Characters per chunk |
+| `CHUNK_OVERLAP` | `100` | Overlap between chunks |
+| `MAX_UPLOAD_SIZE_MB` | `50` | Max upload file size |
+| `API_HOST` | `0.0.0.0` | Backend bind address |
+| `API_PORT` | `8000` | Backend port |
+| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG` for dev) |
+| `API_BASE_URL` | `http://127.0.0.1:8000` | Frontend → backend URL |
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/documents/upload` | Upload and index PDF/TXT/MD files |
+| `GET` | `/documents` | List indexed documents with chunk counts |
+| `DELETE` | `/documents` | Clear the FAISS index |
+| `POST` | `/query` | Query documents → full response |
+| `POST` | `/query/stream` | Query with SSE streaming (Ollama) |
+| `GET` | `/health` | Liveness check |
+| `GET` | `/ready` | Readiness check (index loaded?) |
+| `GET` | `/system/backend` | Current backend info |
+| `POST` | `/system/backend` | Switch backend |
+| `GET` | `/system/backends` | List available backends |
+
+Interactive API docs: http://localhost:8000/docs
+
+## Testing
+
+```bash
+pip install -e ".[dev]"
+
+# Run all tests
+pytest tests/ -v
+
+# Linting
+ruff check .
+ruff format --check .
+
+# Type checking
+mypy backend/ --ignore-missing-imports
+```
+
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Install dev dependencies: `pip install -e ".[dev]"`
+3. Set up pre-commit hooks:
+   ```bash
+   pre-commit install
+   ```
+4. Create a feature branch and make your changes
+5. Ensure all checks pass:
+   ```bash
+   ruff check .
+   ruff format .
+   mypy backend/ --ignore-missing-imports
+   pytest tests/ -v
+   ```
+6. Open a Pull Request
 
-## 📝 License
+## AI Backends
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### LexRank
+- **Type**: Extractive summarisation
+- **Use case**: Quick document insights, key sentence extraction
+- **Pros**: Fast, no GPU needed, preserves original text
+- **Install**: Included in core dependencies
 
-## 🙏 Acknowledgments
+### DistilBART
+- **Type**: Abstractive summarisation
+- **Use case**: Coherent summaries, text generation
+- **Pros**: Natural language generation, contextual understanding
+- **Install**: `pip install -e ".[distilbart]"` (requires ~2GB for PyTorch)
 
-- [Streamlit](https://streamlit.io/) for the amazing web framework
-- [FastAPI](https://fastapi.tiangolo.com/) for the robust API framework
-- [Ollama](https://ollama.ai/) for local LLM serving
-- [FAISS](https://github.com/facebookresearch/faiss) for efficient vector search
-- [Sentence Transformers](https://www.sbert.net/) for text embeddings
-- [Cloudflare](https://cloudflare.com/) for tunnel infrastructure
+### Ollama (LLaMA3, Mistral, etc.)
+- **Type**: Large Language Model
+- **Use case**: Complex reasoning, detailed analysis
+- **Pros**: Comprehensive responses, advanced reasoning
+- **Install**: [Install Ollama](https://ollama.ai/) separately
 
-## 📞 Support
+## License
 
-For questions, issues, or feature requests, please open an issue in the GitHub repository.
-
----
-
-**🔬 Happy Researching! 🔬**
+This project is licensed under the MIT License.
